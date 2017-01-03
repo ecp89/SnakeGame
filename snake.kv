@@ -1,0 +1,27 @@
+#:kivy 1.0.9
+
+<SnakeGame>:
+    snake: snake
+
+    canvas:
+        Rectangle:
+            pos: 0, self.height - 40
+            size: self.width, 40
+
+    Label:
+        font_size: 30
+        center_x: root.width * 0.5
+        top: root.top + 25
+        text: "0"
+        color: (1,0,0,1)
+
+    Snake:
+        id: snake
+        center: self.parent.center
+
+<Snake>:
+    size: 10, 10
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size
