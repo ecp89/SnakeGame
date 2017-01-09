@@ -30,26 +30,23 @@ class Snake(Widget):
         with self.canvas:
             self.snake_body.append((Rectangle(pos=(200,200), size=(self.SNAKE_SQAURE_SIZE))))
             #new_pos = self.add_tuple((self.SNAKE_SQAURE_SIZE * -1), self.snake_body[-1].pos)
-            self.snake_body.append((Rectangle(pos=(200,189), size=(self.SNAKE_SQAURE_SIZE))))
+            #self.snake_body.append((Rectangle(pos=(200,189), size=(self.SNAKE_SQAURE_SIZE))))
         # map(self.print_helper, self.snake_body)
 
         self.derive_property()
         # map(self.print_helper, self.snake_body_prop)
 
-    def print_helper(self, r):
-        print r.pos
-
     def move(self, direction, last_direction):
-        if direction != [0,0]:
-            print("Length of snake_body_prop: {}".format(len(self.snake_body_prop)))
-            if(len(self.snake_body) > 1):
-                rect = self.snake_body.pop()
-                rect.pos = self.calculate_new_position(direction, self.snake_body[0].pos)
-                self.snake_body.appendleft(rect)
-            else:
-                self.snake_body[0].pos = (direction*self.VELOCITY) + self.snake_body[0].pos
+        has_body = len(self.snake_body) > 1
+        print (has_body and ((direction[0] == last_direction[0]) or (direction[1] == last_direction[1])))
+        # print("direciton: {}\n last_direction: {}\n check: {}".format(direction, last_direction, (direction[0] == last_direction[0] or direction[1] == last_direction[1])))
+        direction = last_direction if (has_body and ((direction[0] == last_direction[0]) or (direction[1] == last_direction[1]))) else direction
+        rect = self.snake_body.pop() if has_body else self.snake_body[0]
+        rect.pos = self.calculate_new_position(direction, self.snake_body[0].pos)
+        self.snake_body.appendleft(rect) if has_body else None
 
-            self.derive_property()
+        self.derive_property()
+        return direction
 
     def calculate_new_position(self, direction, head_position):
         head_delta = map(operator.mul, self.SNAKE_SQAURE_SIZE, direction)
@@ -119,11 +116,10 @@ class SnakeGame(Widget):
 
     def update(self, dt):
         current_direction = self.keycodeToVector.get(self.keypress, self.last_direction)
-        self.snake.move(current_direction, self.last_direction)
+        self.last_direction = self.snake.move(current_direction, self.last_direction)
         if(self.keypress == 97): # 97 -> a
             self.snake.add_to_body()
         self.keypress = None
-        self.last_direction = current_direction
 
 class SnakeApp(App):
     def build(self):
