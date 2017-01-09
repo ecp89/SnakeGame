@@ -9,16 +9,16 @@ from kivy.graphics import Rectangle
 from kivy.graphics.instructions import InstructionGroup
 import operator
 
-GAME_SPEED = 1.0/10.0
+GAME_SPEED = 1.0/15.0
 
 
 
 
 class Snake(Widget):
     SNAKE_SQAURE_SIZE = (10, 10)
-    START = (1,1)
     VELOCITY = 2
     SNAKE_SQUARE_SEP = 2
+
 
     #body = ListProperty([Rectangle(pos=(self.parent.center), size=(SNAKE_SQAURE_SIZE))])
 
@@ -39,18 +39,23 @@ class Snake(Widget):
     def print_helper(self, r):
         print r.pos
 
-    count = 401
-    def move(self, direction):
+    def move(self, direction, last_direction):
         if direction != [0,0]:
             print("Length of snake_body_prop: {}".format(len(self.snake_body_prop)))
             if(len(self.snake_body) > 1):
                 rect = self.snake_body.pop()
-                rect.pos = map(operator.add, map(operator.add, map(operator.mul, self.SNAKE_SQAURE_SIZE, direction), self.snake_body[0].pos), map(operator.mul, (self.VELOCITY, self.VELOCITY), direction))
+                rect.pos = self.calculate_new_position(direction, self.snake_body[0].pos)
                 self.snake_body.appendleft(rect)
             else:
                 self.snake_body[0].pos = (direction*self.VELOCITY) + self.snake_body[0].pos
 
             self.derive_property()
+
+    def calculate_new_position(self, direction, head_position):
+        head_delta = map(operator.mul, self.SNAKE_SQAURE_SIZE, direction)
+        new_head_pos = map(operator.add, head_delta, head_position)
+        new_head_with_space = map(operator.add, new_head_pos, direction)
+        return new_head_with_space
 
     def add_to_body(self):
         new_pos = self.add_tuple(map(lambda x : x * -1, self.SNAKE_SQAURE_SIZE ) , self.snake_body[-1].pos)
@@ -71,13 +76,14 @@ class Snake(Widget):
 
 class SnakeGame(Widget):
     #snake = ObjectProperty(0)
-    lastDir = Vector(0,0)
+    last_direction = Vector(0, 0)
     # 273 -> up
     # 274 -> down
     # 275 -> right
     # 276 -> left
     keycodeToVector = {273: Vector(0,1), 274: Vector(0, -1), 275: Vector(1,0), 276: Vector(-1, 0)}
     snake = ObjectProperty(0)
+    keypress = None
 
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
@@ -102,7 +108,8 @@ class SnakeGame(Widget):
 
         # Return True to accept the key. Otherwise, it will be used by
         # the system.
-        self.update(0, keycode[0])
+        #self.update(0, keycode[0])
+        self.keypress = keycode[0]
         return True
 
     def _keyboard_closed(self):
@@ -110,11 +117,13 @@ class SnakeGame(Widget):
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
         self._keyboard = None
 
-    def update(self, dt, keycode=None):
-        self.lastDir = self.keycodeToVector.get(keycode, self.lastDir)
-        self.snake.move(self.lastDir)
-        if(keycode == 97):
+    def update(self, dt):
+        current_direction = self.keycodeToVector.get(self.keypress, self.last_direction)
+        self.snake.move(current_direction, self.last_direction)
+        if(self.keypress == 97): # 97 -> a
             self.snake.add_to_body()
+        self.keypress = None
+        self.last_direction = current_direction
 
 class SnakeApp(App):
     def build(self):
