@@ -5,8 +5,7 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.window import Window
 from collections import deque
-from kivy.graphics import Rectangle
-from kivy.graphics.instructions import InstructionGroup
+from kivy.graphics import Rectangle, Color
 import operator
 
 GAME_SPEED = 1.0/15.0
@@ -15,12 +14,9 @@ GAME_SPEED = 1.0/15.0
 
 
 class Snake(Widget):
-    SNAKE_SQAURE_SIZE = (10, 10)
+    SNAKE_SQAURE_SIZE = (9, 9)
     VELOCITY = 2
-    SNAKE_SQUARE_SEP = 2
-
-
-    #body = ListProperty([Rectangle(pos=(self.parent.center), size=(SNAKE_SQAURE_SIZE))])
+    SNAKE_COLOR = (1,0,0)
 
 
     def __init__(self, **kwargs):
@@ -28,18 +24,14 @@ class Snake(Widget):
         self.snake_body_prop = ListProperty([])
         self.snake_body = deque([])
         with self.canvas:
+            Color(*Snake.SNAKE_COLOR)
             self.snake_body.append((Rectangle(pos=(200,200), size=(self.SNAKE_SQAURE_SIZE))))
-            #new_pos = self.add_tuple((self.SNAKE_SQAURE_SIZE * -1), self.snake_body[-1].pos)
-            #self.snake_body.append((Rectangle(pos=(200,189), size=(self.SNAKE_SQAURE_SIZE))))
-        # map(self.print_helper, self.snake_body)
 
         self.derive_property()
-        # map(self.print_helper, self.snake_body_prop)
 
     def move(self, direction, last_direction):
         has_body = len(self.snake_body) > 1
-        print (has_body and ((direction[0] == last_direction[0]) or (direction[1] == last_direction[1])))
-        # print("direciton: {}\n last_direction: {}\n check: {}".format(direction, last_direction, (direction[0] == last_direction[0] or direction[1] == last_direction[1])))
+
         direction = last_direction if (has_body and ((direction[0] == last_direction[0]) or (direction[1] == last_direction[1]))) else direction
         rect = self.snake_body.pop() if has_body else self.snake_body[0]
         rect.pos = self.calculate_new_position(direction, self.snake_body[0].pos)
@@ -55,7 +47,7 @@ class Snake(Widget):
         return new_head_with_space
 
     def add_to_body(self):
-        new_pos = self.add_tuple(map(lambda x : x * -1, self.SNAKE_SQAURE_SIZE ) , self.snake_body[-1].pos)
+        new_pos = map(operator.add, map(lambda x : x * -1, self.SNAKE_SQAURE_SIZE ) , self.snake_body[-1].pos)
         print("self.snake_body[-1].pos {}".format(self.snake_body[-1].pos))
         print(self.SNAKE_SQAURE_SIZE)
         print("new_pos {}".format(new_pos))
@@ -72,7 +64,7 @@ class Snake(Widget):
 
 
 class SnakeGame(Widget):
-    #snake = ObjectProperty(0)
+    BORDER_WIDTH = 20
     last_direction = Vector(0, 0)
     # 273 -> up
     # 274 -> down
@@ -92,11 +84,18 @@ class SnakeGame(Widget):
             pass
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
         # self.snake = Snake()
+        with self.canvas:
+            Color(1,1,1)
+            Rectangle(pos=(0, 0), size=(SnakeGame.BORDER_WIDTH, Window.height))
+            Rectangle(pos=(0, Window.height - SnakeGame.BORDER_WIDTH), size=(Window.width, SnakeGame.BORDER_WIDTH))
+            Rectangle(pos=(Window.width - SnakeGame.BORDER_WIDTH, 0), size=(SnakeGame.BORDER_WIDTH, Window.height))
+            Rectangle(pos=(0, 0), size=(Window.width, SnakeGame.BORDER_WIDTH))
+
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
-        print('The key', keycode, 'have been pressed')
-        print(' - text is %r' % text)
-        print(' - modifiers are %r' % modifiers)
+        # print('The key', keycode, 'have been pressed')
+        # print(' - text is %r' % text)
+        # print(' - modifiers are %r' % modifiers)
 
         # Keycode is composed of an integer + a string
         # If we hit escape, release the keyboard
