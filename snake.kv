@@ -1,7 +1,7 @@
 #:kivy 1.0.9
 
 <SnakeGame>:
-    snake: snake
+    snake: snake_h
 
     canvas:
         Rectangle:
@@ -16,12 +16,8 @@
         color: (1,0,0,1)
 
     Snake:
-        id: snake
+        id: snake_h
         center: self.parent.center
 
 <Snake>:
     size: 10, 10
-    canvas:
-        Rectangle:
-            pos: self.pos
-            size: self.size
